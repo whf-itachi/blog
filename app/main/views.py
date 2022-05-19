@@ -2,10 +2,10 @@ from datetime import datetime
 from flask import redirect, render_template, session, url_for
 from . import main
 # from .forms import NameForm
-from .. import db
 from ..models import User
 
 
+@main.route("/index", methods=['GET'])
 def index():
     '''form = NameForm()
     if form.validate_on_submit():
