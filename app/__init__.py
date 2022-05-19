@@ -15,10 +15,9 @@ login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 
 
-def create_app(config_name):
+def create_app():
     app = Flask(__name__)
     app.config.from_object(config['development'])
-    config[config_name].init_app(app)
 
     mail.init_app(app)
     moment.init_app(app)
