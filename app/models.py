@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db, login_manager
@@ -9,6 +11,7 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(64), unique=True, index=True)
     email = db.Column(db.String(64), unique=True)
     password_hash = db.Column(db.String(64))
+    posts = db.relationship('Post', backref='author', lazy='dynamic')
     # role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
     @property
@@ -70,3 +73,11 @@ class Book(db.Model):
 
     def __str__(self):
         return 'Book:%s,%s' % (self.info, self.lead)
+
+
+class Post(db.Model):
+    __tablename__ = 'posts'
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))

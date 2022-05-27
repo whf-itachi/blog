@@ -1,18 +1,44 @@
 from datetime import datetime
-from flask import redirect, render_template, session, url_for
+from flask import redirect, render_template, session, url_for, jsonify
+from flask_login import current_user
+from werkzeug.exceptions import abort
+
 from . import main
-# from .forms import NameForm
-from ..models import User
+from .forms import PostForm
+from .. import db
+from ..models import Post, User
 
 
-@main.route("/index", methods=['GET'])
+class Permission:
+    FOLLOW = 1
+    COMMENT = 2
+    WRITE = 4
+    MODERATE = 8
+    ADMIN = 16
+
+
+@main.route("/", methods=['GET', 'POST'])
 def index():
-    """
-    form = NameForm()
-    if form.validate_on_submit():
-        # ...
+    form = PostForm()
+    if current_user.can(Permission.WRITE) and form.submit():
+        author = current_user._get_current_object()
+        post = Post(body=form.body.data, author=author)
+        db.session.add(post)
         return redirect(url_for('.index'))
-    """
-    return render_template('index.html', form='form', name=session.get('name'),
-                           known=session.get('known', False),
-                           current_time=datetime.utcnow())
+
+    # 按创建时间进行降序排列
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+
+    return jsonify(data={"posts": posts, "form": form})
+    # return render_template('index.html', form=form, posts=posts)
+
+
+@main.route('/user/<username>')
+def user(username):
+    user_data = User.query.filter_by(username=username).first()
+    if user_data is None:
+        abort(404)
+
+    posts = user_data.posts.order_by(Post.timestamp.desc()).all()
+
+    return render_template('user.html', user=user_data, posts=posts)
