@@ -22,7 +22,6 @@ login_manager.login_view = 'auth.login'  # 设置登录页面的端点
 def create_app():
     app = Flask(__name__)
     app.config.from_object(config['development'])
-    print(app.name, '...')
 
     db.init_app(app)
     migrate.init_app(app, db)  # 第一个参数是Flask的实例，第二个参数是Sqlalchemy数据库实例

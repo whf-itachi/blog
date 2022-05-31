@@ -13,7 +13,7 @@ class Config:
     # SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
-    SECRET_KEY = ''
+    SECRET_KEY = 'hard to guess string'
 
 
 class DevelopConfig(Config):
