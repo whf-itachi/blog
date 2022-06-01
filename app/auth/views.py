@@ -4,12 +4,14 @@ import re
 from flask import jsonify, session, request, g
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from app import app_config
 from app.auth import auth
 
 
 #  登录
 from app.models import User
 from app.utils.imgCodeUtil import img_base64_encode
+from app.utils.jwtBM import create_token
 from app.utils.redis_db import get_redis
 
 
@@ -113,22 +115,14 @@ def bp_login():
         user_info.last_login_time = last_login_time
         user_info.login_count = user_info.login_count + 1
 
-
-        #   确认登陆，返回token
+        # 确认登陆，返回token
         ip = request.headers.get("X-Real-IP", '127.0.0.1')
         # print('登陆ip：'+ip)
-        token = createToken({'user': user_info['user_name'], 'ip': ip}, app_config['EXCHANGE_BM_KEY'])
+        token = create_token({'user': user_info['user_name'], 'ip': ip}, app_config['EXCHANGE_BM_KEY'])
         #   删除验证码图片
         rdb.delete(key)
 
-        #   返回用户角色
-        cur.execute('select role_name from roles left join user_role ur on roles.role_id = ur.role_id where user_id=%s', (user_info['user_id']))
-        role_info = cur.fetchone()
-        role = ''
-        if role_info:
-            role = role_info['role_name']
-
-        return jsonify(errno=0, token=token, role=role, user_name=user_info['user_name'])
+        return jsonify(errno=0, token=token, user_name=user_info['user_name'])
 
     except Exception as e:
         return jsonify(errno=500, error='System error')
