@@ -1,11 +1,8 @@
 from datetime import datetime
-from flask import redirect, render_template, session, url_for, jsonify
-from flask_login import current_user
+from flask import redirect, render_template, session, url_for, jsonify, request
 from werkzeug.exceptions import abort
 
 from . import main
-from .forms import PostForm
-from .. import db
 from ..models import Post, User
 
 
@@ -19,17 +16,28 @@ class Permission:
 
 @main.route("/", methods=['GET', 'POST'])
 def index():
-    form = PostForm()
-    if current_user.can(Permission.WRITE) and form.submit():
-        author = current_user._get_current_object()
-        post = Post(body=form.body.data, author=author)
-        db.session.add(post)
-        return redirect(url_for('.index'))
 
     # 按创建时间进行降序排列
     posts = Post.query.order_by(Post.timestamp.desc()).all()
+    print(posts, ' posts')
 
-    return jsonify(data={"posts": posts, "form": form})
+    return jsonify(data={"posts": "posts", "form": "form"})
+    # return render_template('index.html', form=form, posts=posts)
+
+
+@main.route("/create", methods=['POST'])
+def create():
+    # if current_user.can(Permission.WRITE) and form.submit():
+    #     author = current_user._get_current_object()
+    #     post = Post(body=form.body.data, author=author)
+    #     db.session.add(post)
+    #     return redirect(url_for('.index'))
+
+    # 按创建时间进行降序排列
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    print(posts, ' posts')
+
+    return jsonify(data={"posts": "posts", "form": "form"})
     # return render_template('index.html', form=form, posts=posts)
 
 

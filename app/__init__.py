@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -5,9 +7,15 @@ from flask_sqlalchemy import SQLAlchemy
 
 from config import config
 
-# mail = Mail()
-# moment = Moment()
-# pagedown = PageDown()
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+
+
+# 其他配置信息
+app_config = dict(
+    JWT_EXPIRED_SECONDS=86400,  # token过期时间
+    EXCHANGE_BM_KEY='H9KDmQsnEviC1hofWlTX35711L1pKhjkB4fKAVFrWUdtB6h68ZhJJoDCTacqTYv'
+)
+
 
 # 实例化SQLAlchemy对象
 db = SQLAlchemy()  # db 对象是 SQLAlchemy 类的实例，表示程序使用的数据库，同时还获得了 Flask-SQLAlchemy 提供的所有功能。
@@ -27,10 +35,6 @@ def create_app():
     migrate.init_app(app, db)  # 第一个参数是Flask的实例，第二个参数是Sqlalchemy数据库实例
 
     login_manager.init_app(app)
-
-    # mail.init_app(app)
-    # moment.init_app(app)
-    # pagedown.init_app(app)
 
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint, url_prefix='/auth')

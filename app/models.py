@@ -2,15 +2,21 @@ from datetime import datetime
 
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from . import db, login_manager
+from . import db
 
 
 class User(UserMixin, db.Model):
-    __tablename__ = 'users'  # 类变量 __tablename__ 定义在数据库中使用的表名
+    __tablename__ = 'users'  # 类变量 定义在数据库中使用的表名
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), unique=True, index=True)
+    user_name = db.Column(db.String(64), unique=True, index=True)
+    user_phone = db.Column(db.String(64), unique=True, index=True)
     email = db.Column(db.String(64), unique=True)
     password_hash = db.Column(db.String(64))
+    create_time = db.Column(db.Time, default=datetime.now)
+    update_time = db.Column(db.Time, default=datetime.now, onupdate=datetime.now)
+    last_login_time = db.Column(db.Time)
+    last_login_ip = db.Column(db.String(64))
+    login_count = db.Column(db.Integer)
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     # role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
@@ -28,17 +34,6 @@ class User(UserMixin, db.Model):
     # 返回一个具有可读性的字符串表示模型，可在调试和测试时使用。
     def __repr__(self):
         return '<User %f>' % self.username
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    """
-    加载用户的回调函数接收以 Unicode 字符串形式表示的用户标识符。如果能找到用户，这
-个函数必须返回用户对象；否则应该返回 None。
-    :param user_id:
-    :return:
-    """
-    return User.query.get(int(user_id))
 
 
 # class Role(db.Model):

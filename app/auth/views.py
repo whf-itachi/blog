@@ -1,22 +1,135 @@
-from flask import render_template
-from flask_login import login_required
+import json
+import re
 
-from . import auth
+from flask import jsonify, session, request, g
+from werkzeug.security import generate_password_hash, check_password_hash
 
-
-@auth.route('/login')
-def login():
-    print('login is run')
-    return render_template('auth/login.html')
+from app.auth import auth
 
 
-@auth.route('/secret')
-@login_required
-def secret():
-    """
-    login_required 修饰器:
-        如果未认证的用户访问这个路由，Flask-Login 会拦截请求，把用户发往登录页面。
-    :return:
-    """
-    return 'Only authenticated users are allowed!'
+#  登录
+from app.models import User
+from app.utils.imgCodeUtil import img_base64_encode
+from app.utils.redis_db import get_redis
+
+
+@auth.route('/login', methods=['POST'])
+def bp_login():
+    # 获取表单提交数据
+    data = request.form.to_dict()
+    password = data['password']
+    account_name = data['account_name']
+    if not isinstance(account_name, str) or len(account_name) > 50:
+        return jsonify(errno=400, error='error')
+
+    # 允许用户以手机作为用户名登录
+    if re.match(r'^1[3456789]\d{9}$', account_name):
+        user_name = None
+        user_phone = account_name
+    else:
+        user_name = account_name
+        user_phone = None
+
+    try:
+        #   校验验证码
+        rdb = get_redis()
+        ip = request.headers.get("X-Real-IP", '127.0.0.1')
+        key = ip + '_img_code'
+        redis_user_info = rdb.get(key)
+        redis_info_dict = json.loads(redis_user_info) if redis_user_info else None
+        if redis_user_info and redis_info_dict.get('img_code'):
+            img_code = request.form.get('img_code') if not request.get_json() else request.get_json().get(
+                'img_code')
+            if not img_code or img_code != redis_info_dict.get('img_code'):
+                return jsonify(errno=400, error='img_code is wrong')
+
+        if user_name is not None:
+            # 根据用户名查询用户
+            user_info = User.query.filter_by(user_name=user_name).first()
+        else:
+            # 根据手机号查询用户
+            user_info = User.query.filter_by(user_phone=user_phone).first()
+
+        if not user_info or not user_info['password_hash']:
+            if redis_user_info:
+                count = redis_info_dict['count'] + 1
+                value = {
+                    'img_code': None,
+                    'count': count,
+                    'img_code_str': ''
+                }
+
+                if count > 2:
+                    img_code_str, code = img_base64_encode()
+                    value = {
+                        'img_code': code,
+                        'count': count,
+                        'img_code_str': img_code_str
+                    }
+                rdb.set(key, json.dumps(value), 600)
+            else:
+                value = {
+                    'img_code': None,
+                    'count': 0,
+                    'img_code_str': ''
+                }
+                rdb.set(key, json.dumps(value), 600)
+            return jsonify(errno=400, error='account_name or password is wrong')
+
+        #   校验密码
+        user_pwd = user_info['user_pwd']
+        if not check_password_hash(user_pwd, password):
+
+            if redis_user_info:
+                count = redis_info_dict['count'] + 1
+                value = {
+                    'img_code': None,
+                    'count': count,
+                    'img_code_str': ''
+                }
+
+                if count > 2:
+                    img_code_str, code = img_base64_encode()
+                    value = {
+                        'img_code': code,
+                        'count': count,
+                        'img_code_str': img_code_str
+                    }
+                rdb.set(key, json.dumps(value), 600)
+            else:
+                value = {
+                    'img_code': None,
+                    'count': 0,
+                    'img_code_str': ''
+                }
+                rdb.set(key, json.dumps(value), 600)
+
+            return jsonify(errno=400, error='account_name or password is wrong')
+
+        # 更新登陆地点与登录次数，后续再做登陆地域进行判断告警
+        # last_login_ip = user_info['last_login_ip']
+        last_login_time = user_info['last_login_time']
+        user_info.last_login_ip = request.headers.get("X-Real-IP", '127.0.0.1')
+        user_info.last_login_time = last_login_time
+        user_info.login_count = user_info.login_count + 1
+
+
+        #   确认登陆，返回token
+        ip = request.headers.get("X-Real-IP", '127.0.0.1')
+        # print('登陆ip：'+ip)
+        token = createToken({'user': user_info['user_name'], 'ip': ip}, app_config['EXCHANGE_BM_KEY'])
+        #   删除验证码图片
+        rdb.delete(key)
+
+        #   返回用户角色
+        cur.execute('select role_name from roles left join user_role ur on roles.role_id = ur.role_id where user_id=%s', (user_info['user_id']))
+        role_info = cur.fetchone()
+        role = ''
+        if role_info:
+            role = role_info['role_name']
+
+        return jsonify(errno=0, token=token, role=role, user_name=user_info['user_name'])
+
+    except Exception as e:
+        return jsonify(errno=500, error='System error')
 
