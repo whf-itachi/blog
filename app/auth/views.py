@@ -140,7 +140,7 @@ def bp_logout():
 def bp_register():
     try:
         data = request.form.to_dict()
-        print(data)
+
         user_name = data['user_name']
         user_phone = data['user_phone']
         password = data['password']
@@ -155,7 +155,7 @@ def bp_register():
             return jsonify(errno=400, error='The user_name already exists')
 
         password_hash = generate_password_hash(password, app_config['PW_ENCRYPT_ALG'])
-        print(password_hash, ' ....PW_ENCRYPT_ALG')
+
         # 新增用户信息
         new_user = User(user_name, user_phone, email, password_hash)
         db.session.add(new_user)
