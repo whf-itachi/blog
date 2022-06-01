@@ -4,17 +4,16 @@ import re
 from flask import jsonify, session, request, g
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from app import app_config
+from app import app_config, db
 from app.auth import auth
 
-
-#  登录
 from app.models import User
 from app.utils.imgCodeUtil import img_base64_encode
 from app.utils.jwtBM import create_token
 from app.utils.redis_db import get_redis
 
 
+#  登录
 @auth.route('/login', methods=['POST'])
 def bp_login():
     # 获取表单提交数据
@@ -127,3 +126,42 @@ def bp_login():
     except Exception as e:
         return jsonify(errno=500, error='System error')
 
+
+#  登出
+@auth.route('/logout', methods=['POST'])
+def bp_logout():
+    # 清除会话记录
+    session.clear()
+    return jsonify(errno=0, error=0)
+
+
+#  注册
+@auth.route('/register', methods=['POST'])
+def bp_register():
+    try:
+        data = request.form.to_dict()
+        print(data)
+        user_name = data['user_name']
+        user_phone = data['user_phone']
+        password = data['password']
+        email = data['email']
+
+        # 判断手机号,用户名是否已经注册
+        select_flag = User.query.filter_by(user_phone=user_phone).first()
+        if select_flag:
+            return jsonify(errno=400, error='The phone already exists')
+        select_flag = User.query.filter_by(user_name=user_name).first()
+        if select_flag:
+            return jsonify(errno=400, error='The user_name already exists')
+
+        password_hash = generate_password_hash(password, app_config['PW_ENCRYPT_ALG'])
+        print(password_hash, ' ....PW_ENCRYPT_ALG')
+        # 新增用户信息
+        new_user = User(user_name, user_phone, email, password_hash)
+        db.session.add(new_user)
+        db.session.commit()
+
+        return jsonify(errno=0, error='success')
+
+    except Exception as e:
+        return jsonify(errno=500, error=f'System error:{e}')

@@ -1,35 +1,28 @@
 from datetime import datetime
 
-from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 
 
-class User(UserMixin, db.Model):
+class User(db.Model):
     __tablename__ = 'users'  # 类变量 定义在数据库中使用的表名
     id = db.Column(db.Integer, primary_key=True)
     user_name = db.Column(db.String(64), unique=True, index=True)
     user_phone = db.Column(db.String(64), unique=True, index=True)
     email = db.Column(db.String(64), unique=True)
-    password_hash = db.Column(db.String(64))
+    password_hash = db.Column(db.String(255))
     create_time = db.Column(db.Time, default=datetime.now)
     update_time = db.Column(db.Time, default=datetime.now, onupdate=datetime.now)
     last_login_time = db.Column(db.Time)
     last_login_ip = db.Column(db.String(64))
     login_count = db.Column(db.Integer)
-    posts = db.relationship('Post', backref='author', lazy='dynamic')
+    # posts = db.relationship('Post', backref='author', lazy='dynamic')
     # role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
-    @property
-    def password(self):
-        raise AttributeError('password is not a readable attribute')
-
-    @password.setter
-    def password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
+    def __init__(self, user_name, user_phone, email, password_hash):
+        self.user_name = user_name
+        self.user_phone = user_phone
+        self.email = email
+        self.password_hash = password_hash
 
     # 返回一个具有可读性的字符串表示模型，可在调试和测试时使用。
     def __repr__(self):

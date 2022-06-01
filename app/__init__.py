@@ -13,7 +13,8 @@ BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 # 其他配置信息
 app_config = dict(
     JWT_EXPIRED_SECONDS=86400,  # token过期时间
-    EXCHANGE_BM_KEY='H9KDmQsnEviC1hofWlTX35711L1pKhjkB4fKAVFrWUdtB6h68ZhJJoDCTacqTYv'
+    EXCHANGE_BM_KEY='H9KDmQsnEviC1hofWlTX35711L1pKhjkB4fKAVFrWUdtB6h68ZhJJoDCTacqTYv',
+    PW_ENCRYPT_ALG='pbkdf2:sha256:50000',
 )
 
 
