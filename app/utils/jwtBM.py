@@ -22,23 +22,22 @@ def create_token(data, secret):
     return token
 
 
-# def checkToken(token, secret):
-#     if not token:
-#         return dict(errno=ErrAuthMissToken, error='Missing token')
-#     try:
-#         # secret = app.config['SECRET_KEY']
-#         decode = jwt.decode(token, secret, algorithms='HS256')
-#         # print(decode)
-#     except jwt.ExpiredSignatureError:
-#         return dict(errno=ErrAuthTokenExp, error='Token expired. Please log in again.')
-#     except jwt.exceptions.DecodeError:
-#         return dict(errno=ErrAuthTokenMissSeg, error='Not enough segments')
-#     except jwt.InvalidTokenError:
-#         return dict(errno=ErrAuthInvalidToken, error='Invalid token. Please log in again.')
-#     except:
-#         return dict(errno=ErrAuthInvalidFormat, error='Invalid token format')
-#     else:
-#         return dict(errno=Err_Suc, error='success', data=decode)
+def check_token(token, secret):
+    if not token:
+        return dict(errno=400, error='Missing token')
+    try:
+        decode = jwt.decode(token, secret, algorithms='HS256')
+        # print(decode)
+    except jwt.ExpiredSignatureError:
+        return dict(errno=400, error='Token expired. Please log in again.')
+    except jwt.exceptions.DecodeError:
+        return dict(errno=400, error='Not enough segments')
+    except jwt.InvalidTokenError:
+        return dict(errno=400, error='Invalid token. Please log in again.')
+    except Exception as e:
+        return dict(errno=400, error=f'Invalid token format: {e}')
+    else:
+        return dict(errno=0, error='success', data=decode)
 
 
 if __name__ == "__main__":
