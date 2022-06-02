@@ -4,6 +4,7 @@ from flask import Flask
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+import pymysql
 
 from config import config
 
@@ -18,6 +19,7 @@ app_config = dict(
 )
 
 
+pymysql.install_as_MySQLdb()
 # 实例化SQLAlchemy对象
 db = SQLAlchemy()  # db 对象是 SQLAlchemy 类的实例，表示程序使用的数据库，同时还获得了 Flask-SQLAlchemy 提供的所有功能。
 migrate = Migrate()
