@@ -1,7 +1,7 @@
 from flask import Blueprint
 
 
-main = Blueprint('main', __name__, url_prefix='/main')
+main = Blueprint('main', __name__)
 
 
 # -------------------
@@ -14,3 +14,4 @@ def teardown_request(e):
 
 
 from . import views, error
+from . import handle
