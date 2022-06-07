@@ -40,6 +40,7 @@ class Handle(object):
 
 @main.route('/', methods=('GET', 'POST'))
 def wx_token_check():
+    print('get here! wx_token_check')
     signature = request.args.get('signature')
     timestamp = request.args.get('timestamp')
     nonce = request.args.get('nonce')
