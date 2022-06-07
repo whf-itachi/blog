@@ -27,7 +27,7 @@ def wx_token_check():
         for item in dataList:
             sha1Obj.update(item.encode('UTF-8'))
         hashcode = sha1Obj.hexdigest()
-        log.info("wx_token_check, hashcode:%s, signature:%s", hashcode, signature)
+        # log.info("wx_token_check, hashcode:%s, signature:%s", hashcode, signature)
         if hashcode == signature:
             return echostr
     return ""
