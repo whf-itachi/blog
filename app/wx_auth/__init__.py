@@ -43,8 +43,8 @@ def get_user_info_by_openid(openid, access_token):
     response.encoding = 'utf-8'
     json_data = response.json() if response and response.json() else None
     '''
-    {"openid":"oLjaZ0ZAGDzV_QErzdGFwp5YYLkI",
-    "nickname":"Ä",
+    {"openid":"oLjaZ0QlzPIIOKhcoediTvNrRfw0",
+    "nickname":"itachi",
     "sex":1,
     "language":"zh_CN",
     "city":"",
