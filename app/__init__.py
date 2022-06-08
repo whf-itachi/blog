@@ -46,4 +46,7 @@ def create_app():
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint, url_prefix='/main')
 
+    from .wx_auth import wx as wx_blueprint
+    app.register_blueprint(wx_blueprint, url_prefix='/wx')
+
     return app
