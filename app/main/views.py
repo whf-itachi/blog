@@ -9,19 +9,23 @@ from ..models import Post, User
 
 
 # 上传博客
-@main.route('/upload_blog', methods=["POST"])
+@main.route('/blog/upload', methods=["POST"])
 def upload_blog():
-    req_data = request.get_json()
+    req_data = request.form.to_dict()
+    print(req_data)
     blog_data = req_data.get("blog")
     user_id = req_data.get("user_id")
     bolg_id = req_data.get("bolg_id")
 
     if bolg_id:
         # 更新博客内容
-        blog_db = Post(id=bolg_id, body=blog_data, author_id=user_id)
+        print('modify a blog')
+        blog_db = Post.query.filter_by(id=bolg_id).first()
+        blog_db.body = blog_data
     else:
         # 新增用户博客
-        blog_db = Post(body=blog_data, author_id=user_id)
+        print('create a blog')
+        blog_db = Post(user_id, blog_data)
     db.session.add(blog_db)
     db.session.commit()
 
@@ -29,7 +33,7 @@ def upload_blog():
 
 
 # 获取博客信息
-@main.route('/query/blogs', methods=['GET'])
+@main.route('/blog/query', methods=['GET'])
 def get_blog_info():
 
     post_info = Post.query.all()

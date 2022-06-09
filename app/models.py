@@ -70,6 +70,10 @@ class Post(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
+    def __init__(self, author_id, body=''):
+        self.author_id = author_id
+        self.body = body
+
     def to_dict(self):
         dict_data = {
             "id": self.id,
