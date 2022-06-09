@@ -1,7 +1,5 @@
-from datetime import datetime
-from flask import redirect, render_template, session, url_for, jsonify, request
+from flask import render_template, jsonify, request
 from werkzeug.exceptions import abort
-from werkzeug.wrappers import response
 
 from . import main
 from .. import db
@@ -12,19 +10,16 @@ from ..models import Post, User
 @main.route('/blog/upload', methods=["POST"])
 def upload_blog():
     req_data = request.form.to_dict()
-    print(req_data)
     blog_data = req_data.get("blog")
     user_id = req_data.get("user_id")
     bolg_id = req_data.get("bolg_id")
 
     if bolg_id:
         # 更新博客内容
-        print('modify a blog')
         blog_db = Post.query.filter_by(id=bolg_id).first()
         blog_db.body = blog_data
     else:
         # 新增用户博客
-        print('create a blog')
         blog_db = Post(user_id, blog_data)
     db.session.add(blog_db)
     db.session.commit()
