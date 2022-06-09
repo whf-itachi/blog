@@ -16,6 +16,8 @@ app_config = dict(
     JWT_EXPIRED_SECONDS=86400,  # token过期时间
     EXCHANGE_BM_KEY='H9KDmQsnEviC1hofWlTX35711L1pKhjkB4fKAVFrWUdtB6h68ZhJJoDCTacqTYv',
     PW_ENCRYPT_ALG='pbkdf2:sha256:50000',
+    WX_TOKEN='N12W4ECVjXt8cmLs',
+    WHITE_URL=['/auth/login', '/auth/register']
 )
 
 
@@ -43,6 +45,9 @@ def create_app():
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
 
     from .main import main as main_blueprint
-    app.register_blueprint(main_blueprint)
+    app.register_blueprint(main_blueprint, url_prefix='/main')
+
+    from .wx_auth import wx as wx_blueprint
+    app.register_blueprint(wx_blueprint, url_prefix='/wx')
 
     return app
