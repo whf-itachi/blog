@@ -30,7 +30,6 @@ def bp_login():
     else:
         user_name = account_name
         user_phone = None
-
     try:
         #   校验验证码
         rdb = get_redis()
@@ -43,7 +42,6 @@ def bp_login():
                 'img_code')
             if not img_code or img_code != redis_info_dict.get('img_code'):
                 return jsonify(errno=400, error='img_code is wrong')
-
         if user_name is not None:
             # 根据用户名查询用户
             user_info = User.query.filter_by(user_name=user_name).first()
@@ -51,7 +49,7 @@ def bp_login():
             # 根据手机号查询用户
             user_info = User.query.filter_by(user_phone=user_phone).first()
 
-        if not user_info or not user_info['password_hash']:
+        if not user_info or not user_info.password_hash:
             if redis_user_info:
                 count = redis_info_dict['count'] + 1
                 value = {
@@ -78,9 +76,8 @@ def bp_login():
             return jsonify(errno=400, error='account_name or password is wrong')
 
         #   校验密码
-        user_pwd = user_info['user_pwd']
+        user_pwd = user_info.password_hash
         if not check_password_hash(user_pwd, password):
-
             if redis_user_info:
                 count = redis_info_dict['count'] + 1
                 value = {
@@ -108,22 +105,23 @@ def bp_login():
             return jsonify(errno=400, error='account_name or password is wrong')
 
         # 更新登陆地点与登录次数，后续再做登陆地域进行判断告警
-        # last_login_ip = user_info['last_login_ip']
-        last_login_time = user_info['last_login_time']
+        # last_login_ip = user_info.last_login_ip
+        last_login_time = user_info.last_login_time
         user_info.last_login_ip = request.headers.get("X-Real-IP", '127.0.0.1')
         user_info.last_login_time = last_login_time
-        user_info.login_count = user_info.login_count + 1
+        user_info.login_count = int(user_info.login_count if user_info.login_count else 0) + 1
 
         # 确认登陆，返回token
         ip = request.headers.get("X-Real-IP", '127.0.0.1')
         # print('登陆ip：'+ip)
-        token = create_token({'user': user_info['user_name'], 'ip': ip}, app_config['EXCHANGE_BM_KEY'])
+        token = create_token({'user': user_info.user_name, 'ip': ip}, app_config['EXCHANGE_BM_KEY'])
         #   删除验证码图片
         rdb.delete(key)
 
-        return jsonify(errno=0, token=token, user_name=user_info['user_name'])
+        return jsonify(errno=0, token=token, user_name=user_info.user_name)
 
     except Exception as e:
+        print(e)
         return jsonify(errno=500, error='System error')
 
 

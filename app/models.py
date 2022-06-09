@@ -26,7 +26,7 @@ class User(db.Model):
 
     # 返回一个具有可读性的字符串表示模型，可在调试和测试时使用。
     def __repr__(self):
-        return '<User %f>' % self.username
+        return '<User %s>' % self.user_name
 
 
 # class Role(db.Model):
@@ -69,3 +69,13 @@ class Post(db.Model):
     body = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    def to_dict(self):
+        dict_data = {
+            "id": self.id,
+            "body": self.body,
+            "timestamp": self.timestamp,
+            "author_id": self.author_id
+        }
+
+        return dict_data

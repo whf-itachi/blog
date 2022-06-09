@@ -17,6 +17,7 @@ app_config = dict(
     EXCHANGE_BM_KEY='H9KDmQsnEviC1hofWlTX35711L1pKhjkB4fKAVFrWUdtB6h68ZhJJoDCTacqTYv',
     PW_ENCRYPT_ALG='pbkdf2:sha256:50000',
     WX_TOKEN='N12W4ECVjXt8cmLs',
+    WHITE_URL=['/auth/login', '/auth/register']
 )
 
 
