@@ -30,15 +30,18 @@ def upload_blog():
 # 获取博客信息
 @main.route('/blog/query', methods=['GET'])
 def get_blog_info():
+    query_parm = request.args.to_dict()
+    blog_id = query_parm.get('id')
+    if blog_id:
+        post_data = Post.query.filter_by(id=blog_id).first()
+        post_info = post_data.to_dict()
+    else:
+        post_data = Post.query.all()
+        post_info = []
+        for post in post_data:
+            post_info.append(post.to_dict())
 
-    post_info = Post.query.all()
-
-    post_infos = []
-
-    for post in post_info:
-        post_infos.append(post.to_dict())
-
-    return jsonify(errno=0, error='success', data=post_infos)
+    return jsonify(errno=0, error='success', data=post_info)
 
 # -------------------------- 以下为测试代码 ---------------------------------
 
